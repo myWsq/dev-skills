@@ -22,7 +22,7 @@ Write one plan for one requirement. The plan is an **outcome contract, not a ste
 
 - If continuing from `dev-explore`, reuse the explored terrain, clarified requirement, and departure-check answers. The grilling and all confirmations already happened there: do not re-interrogate settled decisions and do not re-confirm anything.
 - If starting from a direct request, do lightweight recon: docs, root config, CI, relevant files, exact validation commands, and local conventions.
-- For direct requests, clarify remaining open decisions following the same grill-by-default convention as `dev-explore` (code-answerable questions answered from code, the rest one at a time with a recommended answer; honor "don't grill me"), then finish with `dev-explore`'s departure check — direction, execution mode, delegation consent, autopilot or review pause — so nothing needs confirmation later.
+- For direct requests, clarify remaining open decisions following the same grill-by-default convention as `dev-explore` (code-answerable questions answered from code, the rest one at a time with a recommended answer; honor "don't grill me"), then finish with `dev-explore`'s departure check — direction, execution mode, delegation consent, autopilot or review pause — so nothing needs confirmation later. For the execution-mode item, source the options from the installed `dev-execute-plan` skill's "Choose execution mode" section (the canonical definition); if that skill cannot be located, omit the item — `dev-execute-plan` asks at dispatch time.
 - If clarification uncovers a genuinely open-ended design space, switch to `dev-explore` to converge on a direction before writing the plan.
 - If planning itself surfaces a new decision: when minor, decide it yourself following the approved direction and local conventions, and record it under Decisions & tradeoffs marked `(decided while planning)`; when it contradicts the approved direction or the code's current state, stop and report instead of guessing or re-asking piecemeal.
 
@@ -54,7 +54,7 @@ Use this structure:
 - Risk: LOW | MED | HIGH
 - Depends on: none | plans/NNN-*.md
 - Category: bug | feature | tests | refactor | docs | dx | migration
-- Execution: subagent[ <model>] | <agent CLI>[ <model>] | self — from the departure check; subagent is the default
+- Execution: subagent[ <model>] | <agent CLI>[ <model>] | self — from the departure check; omit the line when the check skipped execution mode (`dev-execute-plan` asks at dispatch time)
 - Planned at: `<short-sha>`, <YYYY-MM-DD>
 
 ## Requirement

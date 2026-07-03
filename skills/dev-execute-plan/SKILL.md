@@ -29,6 +29,8 @@ The plan is an outcome contract, not a step-by-step script: the executor designs
 
 ### 2. Choose execution mode
 
+This section is the canonical definition of execution modes: upstream departure checks (`dev-explore`, `dev-write-plan`) read it by name to build their question instead of duplicating the wording.
+
 Three modes, in default preference order:
 
 1. **Subagent delegation (preferred)**: dispatch implementation to a subagent of the current host environment, typically on a model one tier below the orchestrating model. Available whenever the host has a subagent/task-spawning tool (such as Claude Code's `Agent` tool or an equivalent). The subagent runs inside the host's existing permission envelope — no extra consent needed — and keeps the orchestrator's context free for review.
