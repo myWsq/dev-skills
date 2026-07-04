@@ -45,9 +45,13 @@ python3 "<skill-dir>/scripts/dispatch.py" \
 - The delegated agent works in the current repository on the current branch.
 - `dispatch.py` runs the target CLI with approvals and sandbox disabled (`--dangerously-bypass-approvals-and-sandbox` / `--yolo` / `--dangerously-skip-permissions`). This must have been disclosed to and confirmed by the user before the first dispatch (see the skill's selection rules).
 
+### Parallel groups
+
+When dispatching a parallel group (see the skill's "Parallel group execution" section), each member runs in its own worktree on its own branch; never dispatch two members into the same worktree. The prompt is unchanged — "the current branch" in the preface resolves to the member's branch inside its worktree. For an external CLI, pass the member's worktree path as `<repo-root>` to `dispatch.py`.
+
 ## Monitor
 
-Run dispatch in the background when the host supports it. Poll output for progress. Kill early if the agent is stuck, clearly off-plan, or edits out-of-scope files.
+Run dispatch in the background when the host supports it. Poll output for progress. Kill early if the agent is stuck, clearly off-plan, or edits out-of-scope files — in a parallel group an out-of-scope edit also breaks the group's conflict-free merge guarantee, so kill and REVISE immediately.
 
 Do not trust the delegated agent’s report as proof. Rerun the plan’s done criteria and run the full code review defined in the skill’s Verify section — the executor made unreviewed design choices, and this review is the only quality gate they pass through. Also run `git status --porcelain` after the agent exits: uncommitted changes do not appear in the baseline diff, so a non-empty status means unverified work.
 

@@ -1,11 +1,11 @@
 ---
 name: dev-execute-plan
-description: Execute an implementation plan written by dev-write-plan under `plans/` on the current branch. Use when the user asks to implement, run, execute, or delegate a plan such as `plans/001`, `execute 002`, `use codex/cursor/claude for this plan`, or `run the next TODO plan`. Prefers delegating implementation to a subagent on a lower model tier, also supports delegation to detected external agent CLIs or self-execution, then verifies and reviews the diff.
+description: Execute an implementation plan written by dev-write-plan under `plans/` on the current branch, or a parallel plan group concurrently in per-plan worktrees. Use when the user asks to implement, run, execute, or delegate a plan such as `plans/001`, `execute 002`, `use codex/cursor/claude for this plan`, `run the next TODO plan`, or `run plans 002 and 003 in parallel`. Prefers delegating implementation to a subagent on a lower model tier, also supports delegation to detected external agent CLIs or self-execution, then verifies and reviews the diff.
 ---
 
 # dev-execute-plan
 
-Execute one plan on the current branch. Delegate implementation to a subagent (preferred), delegate to a detected external agent CLI, or implement it yourself — then verify the result against the plan.
+Execute one plan on the current branch. Delegate implementation to a subagent (preferred), delegate to a detected external agent CLI, or implement it yourself — then verify the result against the plan. When `plans/README.md` marks a parallel group whose members are all ready, execute the group concurrently — one worktree per member — following "Parallel group execution" below.
 
 The plan is an outcome contract, not a step-by-step script: the executor designs the implementation against the live code, guided by the plan's Requirement and Decisions & tradeoffs. Quality is therefore enforced at verification — done criteria, scope, and fidelity to recorded decisions — not by matching prescribed edits.
 
@@ -127,6 +127,19 @@ Commits: ...
 Stop/block reason: ...
 Notes: ...
 ```
+
+## Parallel group execution
+
+When the target is a parallel group from `plans/README.md` (all members' prerequisites DONE), execute the members concurrently. This requires a delegation mode — subagent or external CLI; under self-execution run the members serially, since one orchestrator cannot parallelize itself. The serial workflow applies to each member, with these deltas:
+
+1. **Isolation**: before dispatch, give each member its own worktree and branch from the shared baseline: `git worktree add <path-outside-repo> -b plan/NNN`. Prefer the host's native worktree isolation for subagents when it exists. For an external CLI, pass the member's worktree path as `<repo-root>` to `dispatch.py`.
+2. **Preflight once** on the main worktree — clean tree, one baseline SHA for the whole group, drift check per member — then dispatch all members concurrently. Do not commit to the original branch while the group is in flight, except merges from step 5.
+3. **Monitor all agents**. An out-of-scope edit is grounds to kill early in any mode; in a group it also breaks the merge guarantee below.
+4. **Verify serially**, per member in its own worktree, as each finishes: full contract checks and code review, unchanged. REVISE feedback goes to that member's agent, working in that member's worktree.
+5. **Merge sequentially**, only members that passed verification: merge each member's branch into the original branch, then rerun that member's validation commands on the merged result. Disjoint scopes plus the in-scope-only rule make these merges conflict-free by construction — a merge conflict is evidence of a scope violation: treat it as a verification failure and handle via REVISE or BLOCK, never resolve it silently.
+6. **Close per member**: update `plans/README.md`, remove the member's worktree and branch. Because scopes are disjoint, one member's BLOCK does not block merging the others; mark it BLOCKED individually.
+
+An integration plan that depends on the whole group runs afterward as a normal serial plan. In the final report, list status, evidence, and commits per member, plus the merge order.
 
 ## Stop conditions
 
