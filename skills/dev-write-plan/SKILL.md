@@ -100,10 +100,12 @@ surface: if one no longer holds, the decision needs revisiting.
 
 Architecture, data flow, boundaries, and conventions to follow — at milestone
 granularity. Each milestone names an outcome and its validation, never the
-edits that produce it. Milestone validations must be mechanical,
-exit-code-checkable commands the executor runs itself (tests, typecheck,
-lint); behavior-level acceptance — a project verify flow, driving the app —
-belongs under Done criteria and is run by the orchestrator at verification.
+edits that produce it. Milestone validations must be fast, in-process,
+exit-code-checkable commands the executor runs itself (unit tests, typecheck,
+lint). Anything needing a runtime environment — e2e/UI suites, a running app,
+browser, or external service, a project verify flow — is acceptance-tier:
+list it under Commands marked `(acceptance)`, never as a milestone
+validation; the orchestrator runs it at verification.
 
 ### Milestone 1: <outcome>
 
@@ -126,8 +128,14 @@ Out of scope:
 
 | Purpose | Command | Expected result |
 | --- | --- | --- |
-| Test | `<command>` | exit 0 |
+| Unit tests | `<command>` | exit 0 |
 | Typecheck | `<command>` | exit 0 |
+| E2E (acceptance) | `<command>` | exit 0 |
+
+Mark every command that needs a runtime environment — e2e/UI suites, anything
+requiring a running app, browser, or external service — with `(acceptance)`:
+the orchestrator runs those at verification, the executor never does. Drop the
+row if the project has none.
 
 ## Done criteria
 
