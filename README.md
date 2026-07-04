@@ -57,6 +57,8 @@ Three execution modes, in default preference order:
 
 Regardless of mode, the orchestrator verifies the result itself: it re-runs every done criterion, reads the full diff against the recorded baseline, checks that only in-scope files changed and that nothing is left uncommitted, and reviews tests for meaningful assertions. Delegated work that needs fixes goes back to the executor as concrete revision feedback (at most two rounds) before the plan is marked BLOCKED.
 
+The verification work is split deliberately: the delegated executor runs only the plan's mechanical milestone checks (tests, typecheck, lint) as its development feedback loop; project-level verification and acceptance flows — a verify skill, verify-fix loops, launching and driving the app — run once, by the orchestrator, after the code review passes. The executor's self-verification is never accepted as evidence, so heavyweight verification inside it would be pure duplicated cost.
+
 For a **parallel group**, each member is dispatched into its own git worktree and branch; the orchestrator verifies each member as it finishes, then merges the passing branches back sequentially. Disjoint scopes make these merges conflict-free by construction — a merge conflict is evidence of a scope violation and is handled as a verification failure, never resolved silently.
 
 ## Installation

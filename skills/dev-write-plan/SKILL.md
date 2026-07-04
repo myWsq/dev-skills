@@ -100,7 +100,10 @@ surface: if one no longer holds, the decision needs revisiting.
 
 Architecture, data flow, boundaries, and conventions to follow — at milestone
 granularity. Each milestone names an outcome and its validation, never the
-edits that produce it.
+edits that produce it. Milestone validations must be mechanical,
+exit-code-checkable commands the executor runs itself (tests, typecheck,
+lint); behavior-level acceptance — a project verify flow, driving the app —
+belongs under Done criteria and is run by the orchestrator at verification.
 
 ### Milestone 1: <outcome>
 
