@@ -12,7 +12,7 @@ The prompt contains:
 
 1. Executor preface:
 
-   > You are executing the plan below. It is an outcome contract, not a step-by-step script: understand the Requirement and the Decisions & tradeoffs, then design the implementation yourself against the live code. Follow every recorded decision; if you must deviate, say so and justify it in your report. Work milestone by milestone and run each milestone's validation before continuing — fast, in-process checks only (unit tests, typecheck, lint). Do not run anything that needs a runtime environment: no e2e or UI test suites, no commands marked `(acceptance)` in the plan, no verify skill, no verify-fix loops, no launching and driving the app; final acceptance happens outside this session after code review. Change only in-scope files. Do not edit `plans/README.md`. Stop on any STOP condition. Commit work on the current branch as you go. When finished, report what changed, validation results, commits, and any deviations from the recorded decisions. Only claim results backed by commands you actually ran.
+   > You are executing the plan below. It is an outcome contract, not a step-by-step script: understand the Requirement and the Decisions & tradeoffs, then design the implementation yourself against the live code. Follow every recorded decision; if you must deviate, say so and justify it in your report. Your job is the implementation only: write the code and the tests the plan requires, milestone by milestone, and commit as you go. Run **no validation commands**: no unit tests, no typecheck, no lint, no e2e or UI suites, no commands marked `(acceptance)`, no verify skill or verify-fix loops, nothing that launches the app — all verification happens outside this session, and failures come back to you as concrete revision feedback. Spend no effort beyond the implementation: no formatting sweeps, no refactors outside scope, no doc updates the plan does not ask for. Change only in-scope files. Do not edit `plans/README.md`. Stop on any STOP condition. When finished, report what changed, the key design choices, commits, and any deviations from the recorded decisions. Do not claim the code works — verifying it is not your job.
 
 2. Full plan text.
 3. Safety rules:
@@ -51,7 +51,7 @@ When dispatching a parallel group (see the skill's "Parallel group execution" se
 
 ## Monitor
 
-Run dispatch in the background when the host supports it. Poll output for progress. Kill early if the agent is stuck, clearly off-plan, or edits out-of-scope files — in a parallel group an out-of-scope edit also breaks the group's conflict-free merge guarantee, so kill and REVISE immediately.
+Run dispatch in the background when the host supports it. Poll output for progress. Kill early if the agent is stuck, clearly off-plan, edits out-of-scope files, or drifts off-role into running validation commands and fix-loops — in a parallel group an out-of-scope edit also breaks the group's conflict-free merge guarantee, so kill and REVISE immediately.
 
 Do not trust the delegated agent’s report as proof. Rerun the plan’s done criteria and run the full code review defined in the skill’s Verify section — the executor made unreviewed design choices, and this review is the only quality gate they pass through. Also run `git status --porcelain` after the agent exits: uncommitted changes do not appear in the baseline diff, so a non-empty status means unverified work.
 
@@ -61,8 +61,9 @@ If the host supports continuing a previously spawned subagent with its context i
 
 For REVISE, dispatch a prompt containing:
 
-- specific review feedback, citing files and lines;
+- specific review feedback, citing files and lines — for a failed check, include the command's error output, since the executor never runs checks itself;
 - the baseline SHA, with an instruction to run `git diff <baseline>..HEAD` itself to see its previous work — do not paste large diffs into the prompt;
-- instruction to fix in place on the current branch and commit.
+- instruction to fix in place on the current branch and commit;
+- the same executor rules as the first dispatch: implementation only, no validation commands.
 
 Allow at most two revision rounds before BLOCK.

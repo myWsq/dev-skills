@@ -64,9 +64,10 @@ Use this structure:
 
 > This plan is an outcome contract, not a step-by-step script. Understand the
 > requirement and the recorded decisions, then design the implementation
-> yourself against the live code. Validate each milestone before continuing.
-> Stop on any STOP condition. When complete, update this plan in
-> `plans/README.md`.
+> yourself against the live code. Run milestone validations as you go only if
+> you are also the verifier — a delegated executor implements only, and
+> verification happens outside its session. Stop on any STOP condition. When
+> complete, update this plan in `plans/README.md`.
 >
 > Drift check: `git diff --stat <planned-sha>..HEAD -- <in-scope paths> <files cited under Decisions & tradeoffs>`
 
@@ -101,11 +102,12 @@ surface: if one no longer holds, the decision needs revisiting.
 Architecture, data flow, boundaries, and conventions to follow — at milestone
 granularity. Each milestone names an outcome and its validation, never the
 edits that produce it. Milestone validations must be fast, in-process,
-exit-code-checkable commands the executor runs itself (unit tests, typecheck,
-lint). Anything needing a runtime environment — e2e/UI suites, a running app,
-browser, or external service, a project verify flow — is acceptance-tier:
-list it under Commands marked `(acceptance)`, never as a milestone
-validation; the orchestrator runs it at verification.
+exit-code-checkable commands (unit tests, typecheck, lint), run by whoever
+verifies: the orchestrator under delegation, the implementer itself only in
+self-execution. Anything needing a runtime environment — e2e/UI suites, a
+running app, browser, or external service, a project verify flow — is
+acceptance-tier: list it under Commands marked `(acceptance)`, never as a
+milestone validation; it runs last, after code review.
 
 ### Milestone 1: <outcome>
 
