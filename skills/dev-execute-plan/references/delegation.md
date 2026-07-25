@@ -1,12 +1,12 @@
 # Delegation Contract
 
-Use this reference when `dev-execute-plan` delegates implementation — to a subagent of the host environment (preferred) or to an external agent CLI. Self-execution does not use this path.
+Use this reference when `dev-execute-plan` delegates implementation — to a subagent of the host environment (preferred), to codex via its official MCP tool when the host exposes one, or to an external agent CLI. Self-execution does not use this path.
 
-Both channels share the same prompt content, the same monitoring duty, and the same REVISE loop. They differ in dispatch mechanics and consent: a subagent runs inside the host's existing permission envelope and needs no extra consent; an external CLI runs with approvals and sandbox bypassed and requires the disclosure covered by the departure check.
+All channels share the same prompt content, the same monitoring duty, and the same REVISE loop. They differ in dispatch mechanics and consent: a subagent runs inside the host's existing permission envelope and needs no extra consent; codex via MCP and an external CLI both run with approvals bypassed and require the disclosure covered by the departure check.
 
 ## Prompt
 
-For an external CLI, write the prompt to a temporary file **outside the repository** (for example via `mktemp -t dev-plan-prompt`). Never create it inside the repo: it would dirty the worktree that preflight just verified, and the delegated agent — which is told to commit — could commit it by accident. For a subagent, pass the same content directly as the subagent prompt; no file is needed.
+For an external CLI, write the prompt to a temporary file **outside the repository** (for example via `mktemp -t dev-plan-prompt`). Never create it inside the repo: it would dirty the worktree that preflight just verified, and the delegated agent — which is told to commit — could commit it by accident. For a subagent or for codex via MCP, pass the same content directly as the call's prompt argument; no file is needed.
 
 The prompt contains:
 
@@ -29,6 +29,15 @@ Dispatch via the host's subagent/task-spawning tool (such as Claude Code's `Agen
 - Default the model to one tier below the orchestrating model when the host allows model selection; honor a model recorded at the departure check or named by the user.
 - Run in the background when the host supports it, so the orchestrator can monitor.
 - The subagent works in the current repository on the current branch, inside the host's existing permission envelope.
+
+### Codex (MCP)
+
+Use this when a tool named `mcp__codex__codex` is available in this session (the official Codex MCP server), instead of the CLI path below.
+
+- Call `mcp__codex__codex` with `prompt` (the full dispatch prompt), `cwd` (the repo root), and `model` if the user named one.
+- Set `sandbox: "workspace-write"` and `approval-policy: "never"` — `workspace-write` permits shell commands and file writes inside `cwd`, which covers `git commit` there; it is narrower than the CLI's `--dangerously-bypass-approvals-and-sandbox` and so needs less disclosure. This is not yet confirmed against a real dispatch — if the executor's commits go missing, that is the first thing to check; fall back to `sandbox: "danger-full-access"` if `workspace-write` turns out to block it. Either setting still counts as approvals bypassed and needs the same one-time disclosure as an external CLI (see the skill's selection rules).
+- This call is synchronous foreground: it blocks until codex finishes, unlike the backgrounded CLI dispatch below, and its full output lands in the orchestrator's context — a partial regression from delegation's usual point of keeping that context free for review. That is acceptable for a single serial plan (monitor by reading its result when it returns; there is no separate poll-and-kill window). It rules out this path for parallel groups, which need concurrent dispatch — use the CLI there instead when available.
+- REVISE: resend a fresh, self-contained prompt via `mcp__codex__codex` (same as a stateless CLI round), not `mcp__codex__codex-reply` — the tool's response shape has not been verified to carry a reusable thread id here, so don't assume conversation state survives across rounds.
 
 ### External agent CLI
 
@@ -57,7 +66,7 @@ Do not trust the delegated agent’s report as proof. Rerun the plan’s done cr
 
 ## Revise
 
-If the host supports continuing a previously spawned subagent with its context intact, send the revision feedback to that same subagent. Otherwise — external CLIs always, subagents on hosts without resume — each dispatch is a fresh, stateless session: the executor remembers nothing from the previous round, so the REVISE prompt must be self-contained.
+If the host supports continuing a previously spawned subagent with its context intact, send the revision feedback to that same subagent. Otherwise — external CLIs and codex via MCP always, subagents on hosts without resume — each dispatch is a fresh, stateless session: the executor remembers nothing from the previous round, so the REVISE prompt must be self-contained.
 
 For REVISE, dispatch a prompt containing:
 
