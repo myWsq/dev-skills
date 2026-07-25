@@ -2,6 +2,14 @@
 
 简体中文 | [English](README.md)
 
+> [!IMPORTANT]
+> **本仓库已归档。** 开发已迁移至 [myWsq/plugins-builder](https://github.com/myWsq/plugins-builder)，这些 skills 以 `dev` 插件的形式继续维护。请通过 [myWsq/plugins](https://github.com/myWsq/plugins) marketplace 安装：
+>
+> ```text
+> /plugin marketplace add myWsq/plugins
+> /plugin install dev@plugins
+> ```
+
 `dev-skills` 是一组面向 agent 的计划驱动开发 skills。它把一次开发任务拆成三个清晰阶段——代码探索、实现规划、计划执行——并把所有需要人拍板的决策前置到第一阶段。一旦确认,后续链路自动跑完,不再打断你。
 
 分工方式:主 agent 负责探索代码、把需求"拷问"到方案收敛、写计划、评审结果;实现本身默认委派给低一级模型的子 agent 完成,也可以选外部 agent CLI 或主 agent 自己实现。

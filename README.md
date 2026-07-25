@@ -2,6 +2,14 @@
 
 [简体中文](README.zh-CN.md) | English
 
+> [!IMPORTANT]
+> **This repository is archived.** Development has moved to [myWsq/plugins-builder](https://github.com/myWsq/plugins-builder), where these skills live on as the `dev` plugin. Install it from the [myWsq/plugins](https://github.com/myWsq/plugins) marketplace:
+>
+> ```text
+> /plugin marketplace add myWsq/plugins
+> /plugin install dev@plugins
+> ```
+
 `dev-skills` is a small collection of agent skills for plan-driven software development. It splits a development task into three explicit phases — code exploration, implementation planning, and plan execution — and front-loads every decision that needs a human into the first phase. Once you confirm, the rest of the chain runs to completion without asking again.
 
 The division of labor: the orchestrating agent explores the code, grills the requirement into a converged direction, writes the plan, and reviews the result. The implementation itself is delegated by default to a subagent running on a lower model tier; external agent CLIs and self-execution are alternatives.
